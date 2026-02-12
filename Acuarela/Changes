@@ -1,0 +1,6 @@
+Revision history for Perl extension Acuarela.
+
+0.01  Sat Feb  7 03:27:12 2026
+	- original version; created by h2xs 1.23 with options
+		-AX -n Acuarela
+
