@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Acuarela',
     VERSION_FROM      => 'lib/Acuarela.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM         => {'Converter::Color' => 0.18}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {'Convert::Color' => 0.18}, # e.g., Module::Name => 1.1
     ABSTRACT_FROM     => 'lib/Acuarela.pm', # retrieve abstract from module
     AUTHOR            => 'CarlosGS-98 <cgonzalezsanz98@gmail.com>',
     LICENSE           => 'perl',

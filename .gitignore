@@ -26,6 +26,7 @@ inc/
 
 # ExtUtils::MakeMaker
 /blib/
+blib/
 /_eumm/
 /*.gz
 /Makefile
@@ -40,5 +41,9 @@ inc/
 # cpanfile.snapshot should generally be ignored for library code, otherwise included
 # cpanfile.snapshot 
 
+# Custom build artifacts
+Acuarela/Makefile
+
 # IntelliJ Idea
+.idea/
 _Deparsed_XSubs.pm

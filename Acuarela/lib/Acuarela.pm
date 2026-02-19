@@ -16,7 +16,8 @@ our @ISA = qw(Exporter);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	Acuarela::Color
+    Acuarela::Color::BaseColor
+    Acuarela::Color::RGBA
     Acuarela::Mixer
     Acuarela::Utils
 ) ] );
@@ -79,7 +80,7 @@ CarlosGS-98, E<lt>cgonzalezsanz98@gmail.comE<gt>
 Copyright (C) 2026 by CarlosGS-98
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.42.0 or,
+it under the same terms as Perl itself, either Perl version 5.40.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 
