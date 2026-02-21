@@ -3,26 +3,42 @@ use v5.40;
 
 use strict;
 use warnings;
+use diagnostics;
 use utf8;
 use utf8::all;
 
 # Main Testbench
 use Data::Dumper;
 use Moose;
-use Acuarela::Color::RGBA;
-use diagnostics;
+use Term::ANSIColor;
 
+# Make all of Acuarela's modules visible
+use FindBin qw($RealBin);
+use lib ($RealBin, "$RealBin/Acuarela");
+
+# Custom imports
+use Acuarela::Color::RGBA;
+
+# Script testing
 my $test_color = Acuarela::Color::RGBA->new(
-    "channels"  => {'r' => 0, 'g' => 200, 'b' => 200, 'a' => 255}
+    "channels"  => {'r' => 0, 'g' => 200, 'b' => 200, 'a' => 255},
+    #"bit_depth" => 16,
 );
 
-my @test_spaces = qw("BRAILLE" "CMY" "CMYK" "HEX" "HSL" "HSV");
+my @test_spaces = qw(BRAILLE CMY CMYK HEX HSL HSV RGB RGBA);
+my @lc_spaces = map(lc, @test_spaces);
 
 print("Test Color [OBJECT]\t=\t$test_color\n");
+print(Dumper(\%$test_color));
+# print(Dumper(@test_spaces));
+# print(Dumper(@lc_spaces));
 
-foreach(@test_spaces) {
+foreach(@lc_spaces) {
     my $test_str = $test_color->convert_to($_);
     print("Test color conversion: $test_str\n");
 }
 
 #print(Term::ANSIColor::color)
+
+$test_color->update_channels(('r' => 255));
+print(Dumper(\%$test_color));

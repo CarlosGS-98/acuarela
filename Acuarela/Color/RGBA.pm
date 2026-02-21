@@ -3,11 +3,18 @@
 package Acuarela::Color::RGBA;
 
 use v5.40;
+use builtin ':5.40';
 
 use strict;
 use warnings;
 use utf8;
 use feature 'signatures';
+
+# # Standard module exports
+# use Exporter "import";
+
+# our @EXPORT_OK = qw(:all);
+# our $VERSION = '0.01';
 
 # Standard imports
 use Carp;
@@ -23,7 +30,7 @@ use Convert::Color::RGB16;
 # Class definition
 use Moose;
 use namespace::autoclean;
-extends('Acuarela::Color::BaseColor');
+extends('Acuarela::Color');
 
 # Class constants
 use constant BRAILLE_PREFIX => 0x2800;
@@ -108,45 +115,53 @@ override convert_to => sub {
     Convert::Color::RGB8->new($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'})
     : Convert::Color::RGB16->new($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'});
 
+    # Adjust color channels depending on the current bit depth
+    my ($red, $green, $blue, $alpha) = ($self->bit_depth == 8)?
+    ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'})
+    : map(floor($_ / 256),  ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'}));
+
     # We should return the string representation of each conversion.
     #
     # Also, whenever possible, these strings should be formatted
     # in the same way as the "Convert::Color" module does.
 
-    if ($color_space =~ m/BRAILLE/i) {  # Hex color but with braille dot patterns
+    if ($color_space =~ m/^BRAILLE$/i) {  # Hex color but with braille dot patterns
         return sprintf(
                 "#[%s%s%s%s]",
-                chr(BRAILLE_PREFIX + $self->channels->{'r'}),
-                chr(BRAILLE_PREFIX + $self->channels->{'g'}),
-                chr(BRAILLE_PREFIX + $self->channels->{'b'}),
-                chr(BRAILLE_PREFIX + $self->channels->{'a'})
+                chr(BRAILLE_PREFIX + $red),
+                chr(BRAILLE_PREFIX + $green),
+                chr(BRAILLE_PREFIX + $blue),
+                chr(BRAILLE_PREFIX + $alpha)
             );
     }
-    elsif ($color_space =~ m/CMYK/i) {
+    elsif ($color_space =~ m/^CMYK$/i) {
         my ($cyan, $magenta, $yellow, $key) =  $dummy_color->convert_to('cmyk')->cmyk;
         
         return "cmyk:$cyan,$magenta,$yellow,$key";
     }
-    elsif ($color_space =~ m/CMY/i) {
+    elsif ($color_space =~ m/^CMY$/i) {
         my ($cyan, $magenta, $yellow) =  $dummy_color->convert_to('cmy')->cmy;
         
         return "cmy:$cyan,$magenta,$yellow";
     }
-    elsif ($color_space =~ m/HEX/i) {
-        return '#' . $dummy_color->hex . sprintf("%2x", $self->channels->{'a'});
+    elsif ($color_space =~ m/^HEX$/i) {
+        return sprintf("#%02x%02x%02x%02x", $red, $green, $blue, $alpha);
     }
-    elsif ($color_space =~ m/HSL/i) {
+    elsif ($color_space =~ m/^HSL$/i) {
         my ($hue, $sat, $light) =  $dummy_color->convert_to('hsl')->hsl;
         
         return "hsl:$hue,$sat,$light";
     }
-    elsif ($color_space =~ m/HSV/i) {
+    elsif ($color_space =~ m/^HSV$/i) {
         my ($hue, $sat, $value) =  $dummy_color->convert_to('hsv')->hsv;
         
         return "hsv:$hue,$sat,$value";
     }
+    elsif ($color_space =~ m/^RGBA?$/i) {  # Idempotent conversion
+        return "rgba:$red,$green,$blue,$alpha";
+    }
     else {
-        croak("Unsupported color conversion (tried to convert ${$self->bit_depth}-bit RGBA to \'$color_space\')\n");
+        croak("Unsupported color conversion (tried to convert ${\$self->bit_depth}-bit RGBA to \'$color_space\')\n");
     }
 };
 

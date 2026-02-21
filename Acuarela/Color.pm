@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package Acuarela::Color::BaseColor;
+package Acuarela::Color;
 
 use v5.40;
 
@@ -9,6 +9,12 @@ use warnings;
 use utf8;
 use feature 'declared_refs';
 use feature 'signatures';
+
+# # Standard module exports
+# use Exporter "import";
+
+# our @EXPORT_OK = qw(:all);
+# our $VERSION = '0.01';
 
 # Standard imports
 use Carp;
