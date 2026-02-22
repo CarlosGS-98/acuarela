@@ -10,10 +10,10 @@ use utf8;
 use feature 'declared_refs';
 use feature 'signatures';
 
-# # Standard module exports
-# use Exporter "import";
+# Make this module exportable
+use Exporter "import";
 
-# our @EXPORT_OK = qw(:all);
+our @EXPORT_OK = qw(:all);
 # our $VERSION = '0.01';
 
 # Standard imports
@@ -66,6 +66,9 @@ sub update_channels(@channels) {
 }
 
 # Should be overridden by all child color classes
-sub convert_to($color_space) {;} # Should return the current color's string representation in $color_space
+sub convert_to($color_space) {;}    # Should return a proper subclass of Acuarela::Color selected by $color_space
+sub as_str() {;}
+sub as_hex() {;}
+sub as_braille() {;}
 
 __PACKAGE__->meta->make_immutable;

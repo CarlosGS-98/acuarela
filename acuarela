@@ -18,6 +18,7 @@ use lib ($RealBin, "$RealBin/Acuarela");
 
 # Custom imports
 use Acuarela::Color::RGBA;
+use Acuarela::Utils;
 
 # Script testing
 my $test_color = Acuarela::Color::RGBA->new(
@@ -25,13 +26,18 @@ my $test_color = Acuarela::Color::RGBA->new(
     #"bit_depth" => 16,
 );
 
-my @test_spaces = qw(BRAILLE CMY CMYK HEX HSL HSV RGB RGBA);
+my @test_spaces = qw(CMY CMYK HSL HSV RGB RGBA);
 my @lc_spaces = map(lc, @test_spaces);
 
 print("Test Color [OBJECT]\t=\t$test_color\n");
 print(Dumper(\%$test_color));
-# print(Dumper(@test_spaces));
-# print(Dumper(@lc_spaces));
+
+print("${\($test_color->as_braille())}\n");
+print("${\($test_color->as_hex())}\n");
+print("${\($test_color->as_str())}\n");
+
+print(Dumper(@test_spaces));
+print(Dumper(@lc_spaces));
 
 foreach(@lc_spaces) {
     my $test_str = $test_color->convert_to($_);
@@ -40,5 +46,9 @@ foreach(@lc_spaces) {
 
 #print(Term::ANSIColor::color)
 
-$test_color->update_channels(('r' => 255));
+$test_color->update_channels(('r' => 255, 'g' => 128));
 print(Dumper(\%$test_color));
+
+my $parsed_color = Acuarela::Utils::parse_color($test_color->as_str());
+
+print(Dumper(\%$parsed_color));

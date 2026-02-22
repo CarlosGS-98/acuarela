@@ -3,17 +3,16 @@
 package Acuarela::Color::RGBA;
 
 use v5.40;
-use builtin ':5.40';
 
 use strict;
 use warnings;
 use utf8;
 use feature 'signatures';
 
-# # Standard module exports
-# use Exporter "import";
+# Make this module exportable
+use Exporter "import";
 
-# our @EXPORT_OK = qw(:all);
+our @EXPORT_OK = qw(:all);
 # our $VERSION = '0.01';
 
 # Standard imports
@@ -45,12 +44,9 @@ has("bit_depth" => (
 # Constructor hooks
 sub BUILD {
     my $self = shift;
-    #print("$self\n");
 
     # Let's assume by default we have 8 bits per channel
-    unless (defined($self->bit_depth)) {
-        $self->_set_depth(8);
-    }
+    $self->_set_depth(8) unless (defined($self->bit_depth));
 
     # Bit depth can only be 8 or 16 bits at this moment
     croak("Unsupported bit depth (got " . $self->bit_depth . " bits per channel)\n")
@@ -106,6 +102,16 @@ sub BUILD {
     }
 }
 
+# Helper methods
+sub _adjust_colors {
+    my $self = shift;
+
+    return ($self->bit_depth == 8)?
+    ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'})
+    : map(floor($_ / 256),  ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'}));
+}
+
+# Overridden parent methods
 override convert_to => sub {
     my $self = shift;
     my $color_space = shift;
@@ -116,36 +122,18 @@ override convert_to => sub {
     : Convert::Color::RGB16->new($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'});
 
     # Adjust color channels depending on the current bit depth
-    my ($red, $green, $blue, $alpha) = ($self->bit_depth == 8)?
-    ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'})
-    : map(floor($_ / 256),  ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'}));
+    my ($red, $green, $blue, $alpha) = $self->_adjust_colors();
 
-    # We should return the string representation of each conversion.
-    #
-    # Also, whenever possible, these strings should be formatted
-    # in the same way as the "Convert::Color" module does.
-
-    if ($color_space =~ m/^BRAILLE$/i) {  # Hex color but with braille dot patterns
-        return sprintf(
-                "#[%s%s%s%s]",
-                chr(BRAILLE_PREFIX + $red),
-                chr(BRAILLE_PREFIX + $green),
-                chr(BRAILLE_PREFIX + $blue),
-                chr(BRAILLE_PREFIX + $alpha)
-            );
+    # We should return a subclass of Acuarela::Color for each conversion.
+    if ($color_space =~ m/^CMY$/i) {
+        my ($cyan, $magenta, $yellow) =  $dummy_color->convert_to('cmy')->cmy;
+        
+        return "cmy:$cyan,$magenta,$yellow";
     }
     elsif ($color_space =~ m/^CMYK$/i) {
         my ($cyan, $magenta, $yellow, $key) =  $dummy_color->convert_to('cmyk')->cmyk;
         
         return "cmyk:$cyan,$magenta,$yellow,$key";
-    }
-    elsif ($color_space =~ m/^CMY$/i) {
-        my ($cyan, $magenta, $yellow) =  $dummy_color->convert_to('cmy')->cmy;
-        
-        return "cmy:$cyan,$magenta,$yellow";
-    }
-    elsif ($color_space =~ m/^HEX$/i) {
-        return sprintf("#%02x%02x%02x%02x", $red, $green, $blue, $alpha);
     }
     elsif ($color_space =~ m/^HSL$/i) {
         my ($hue, $sat, $light) =  $dummy_color->convert_to('hsl')->hsl;
@@ -163,6 +151,33 @@ override convert_to => sub {
     else {
         croak("Unsupported color conversion (tried to convert ${\$self->bit_depth}-bit RGBA to \'$color_space\')\n");
     }
+};
+
+override as_str => sub {
+    my $self = shift;
+    my ($red, $green, $blue, $alpha) = $self->_adjust_colors();
+
+    return "rgba($red, $green, $blue, $alpha)";
+};
+
+override as_hex => sub {
+    my $self = shift;
+    my ($red, $green, $blue, $alpha) = $self->_adjust_colors();
+
+    return sprintf("#%02x%02x%02x%02x", $red, $green, $blue, $alpha);
+};
+
+override as_braille => sub {
+    my $self = shift;
+    my ($red, $green, $blue, $alpha) = $self->_adjust_colors();
+
+    return sprintf(
+                "#[%s%s%s%s]",
+                chr(BRAILLE_PREFIX + $red),
+                chr(BRAILLE_PREFIX + $green),
+                chr(BRAILLE_PREFIX + $blue),
+                chr(BRAILLE_PREFIX + $alpha)
+            );
 };
 
 __PACKAGE__->meta->make_immutable;
