@@ -27,7 +27,7 @@ my $test_color = Acuarela::Color::RGBA->new(
 );
 
 my @test_spaces = qw(CMY CMYK HSL HSV RGB RGBA);
-my @lc_spaces = map(lc, @test_spaces);
+my @lc_spaces = map {lc($_)} @test_spaces;
 
 print("Test Color [OBJECT]\t=\t$test_color\n");
 print(Dumper(\%$test_color));

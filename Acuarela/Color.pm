@@ -10,12 +10,6 @@ use utf8;
 use feature 'declared_refs';
 use feature 'signatures';
 
-# Make this module exportable
-use Exporter "import";
-
-our @EXPORT_OK = qw(:all);
-# our $VERSION = '0.01';
-
 # Standard imports
 use Carp;
 use Data::Dumper;
@@ -23,6 +17,10 @@ use Data::Dumper;
 # Class definition
 use Moose;
 use namespace::autoclean;
+no warnings 'experimental::args_array_with_signatures';
+
+# Class constants
+use constant BRAILLE_PREFIX => 0x2800;
 
 # Base color class attributes
 has("channels" => (
@@ -66,9 +64,21 @@ sub update_channels(@channels) {
 }
 
 # Should be overridden by all child color classes
-sub convert_to($color_space) {;}    # Should return a proper subclass of Acuarela::Color selected by $color_space
-sub as_str() {;}
-sub as_hex() {;}
-sub as_braille() {;}
+sub convert_to($color_space) {
+    # Should return a proper subclass of Acuarela::Color selected by $color_space
+    croak("Abstract color method \'convert_to()\' not implemented");
+}
+
+sub as_str() {
+    croak("Abstract color method \'as_str()\' not implemented");
+}
+
+sub as_hex() {
+    croak("Abstract color method \'as_hex()\' not implemented");
+}
+
+sub as_braille() {
+    croak("Abstract color method \'as_hex()\' not implemented");
+}
 
 __PACKAGE__->meta->make_immutable;
