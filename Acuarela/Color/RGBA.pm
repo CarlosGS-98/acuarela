@@ -9,12 +9,6 @@ use warnings;
 use utf8;
 use feature 'signatures';
 
-# Make this module exportable
-use Exporter "import";
-
-our @EXPORT_OK = qw(:all);
-# our $VERSION = '0.01';
-
 # Standard imports
 use Carp;
 use Convert::Color;
@@ -30,9 +24,6 @@ use Convert::Color::RGB16;
 use Moose;
 use namespace::autoclean;
 extends('Acuarela::Color');
-
-# Class constants
-use constant BRAILLE_PREFIX => 0x2800;
 
 # Class attributes
 has("bit_depth" => (
@@ -58,47 +49,51 @@ sub BUILD {
     # Check whether all corresponding channels exist.
     #
     # If some of the RGBA channels aren't present,
-    # then they'll be set to 0 as a default;
-    # otherwise, their values should be clamped between [0, 2 ** $_bits].
+    # then they'll be set to 0 as a default (except alpha
+    # which is set to the maximum possible value
+    # in order to make the current color completely opaque).
+    #
+    # If they are indeed present, their values should be clamped
+    # then between [0, 2 ** $self->bit_depth - 1].
 
+    # Red channel
     unless (defined($self->channels->{'r'})) {
         $self->update_channels(('r' => 0));
     }
     else {
-        my $color_val = ($self->channels->{'r'} < $self->min_color_val)? $self->min_color_val : $self->channels->{'r'};
-        $color_val = ($self->channels->{'r'} > $self->max_color_val)? $self->max_color_val : $self->channels->{'r'};
-
-        $self->update_channels(('r' => $color_val));
+        $self->update_channels(('r' => $self->min_color_val)) if ($self->channels->{'r'} < $self->min_color_val);
+        $self->update_channels(('r' => $self->max_color_val)) if ($self->channels->{'r'} > $self->max_color_val);
+        $self->update_channels(('r' => $self->channels->{'r'}));
     }
 
+    # Green channel
     unless (defined($self->channels->{'g'})) {
         $self->update_channels(('g' => 0));
     }
     else {
-        my $color_val = ($self->channels->{'g'} < $self->min_color_val)? $self->min_color_val : $self->channels->{'g'};
-        $color_val = ($self->channels->{'g'} > $self->max_color_val)? $self->max_color_val : $self->channels->{'g'};
-
-        $self->update_channels(('g' => $color_val));
+        $self->update_channels(('g' => $self->min_color_val)) if ($self->channels->{'g'} < $self->min_color_val);
+        $self->update_channels(('g' => $self->max_color_val)) if ($self->channels->{'g'} > $self->max_color_val);
+        $self->update_channels(('g' => $self->channels->{'g'}));
     }
 
+    # Blue channel
     unless (defined($self->channels->{'b'})) {
         $self->update_channels(('b' => 0));
     }
     else {
-        my $color_val = ($self->channels->{'b'} < $self->min_color_val)? $self->min_color_val : $self->channels->{'b'};
-        $color_val = ($self->channels->{'b'} > $self->max_color_val)? $self->max_color_val : $self->channels->{'b'};
-
-        $self->update_channels(('b' => $color_val));
+        $self->update_channels(('b' => $self->min_color_val)) if ($self->channels->{'b'} < $self->min_color_val);
+        $self->update_channels(('b' => $self->max_color_val)) if ($self->channels->{'b'} > $self->max_color_val);
+        $self->update_channels(('b' => $self->channels->{'b'}));
     }
 
+    # Alpha channel
     unless (defined($self->channels->{'a'})) {
-        $self->update_channels(('a' => 0));
+        $self->update_channels(('a' => 2 ** $self->bit_depth - 1));
     }
     else {
-        my $color_val = ($self->channels->{'a'} < $self->min_color_val)? $self->min_color_val : $self->channels->{'a'};
-        $color_val = ($self->channels->{'a'} > $self->max_color_val)? $self->max_color_val : $self->channels->{'a'};
-
-        $self->update_channels(('a' => $color_val));
+        $self->update_channels(('a' => $self->min_color_val)) if ($self->channels->{'a'} < $self->min_color_val);
+        $self->update_channels(('a' => $self->max_color_val)) if ($self->channels->{'a'} > $self->max_color_val);
+        $self->update_channels(('a' => $self->channels->{'a'}));
     }
 }
 
@@ -108,7 +103,7 @@ sub _adjust_colors {
 
     return ($self->bit_depth == 8)?
     ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'})
-    : map(floor($_ / 256),  ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'}));
+    : map {floor($_ / 256)} ($self->channels->{'r'}, $self->channels->{'g'}, $self->channels->{'b'}, $self->channels->{'a'});
 }
 
 # Overridden parent methods
@@ -169,14 +164,15 @@ override as_hex => sub {
 
 override as_braille => sub {
     my $self = shift;
+    my $class = ref($self); # Parent class (Acuarela::Color)
     my ($red, $green, $blue, $alpha) = $self->_adjust_colors();
 
     return sprintf(
                 "#[%s%s%s%s]",
-                chr(BRAILLE_PREFIX + $red),
-                chr(BRAILLE_PREFIX + $green),
-                chr(BRAILLE_PREFIX + $blue),
-                chr(BRAILLE_PREFIX + $alpha)
+                chr($class->BRAILLE_PREFIX + $red),
+                chr($class->BRAILLE_PREFIX + $green),
+                chr($class->BRAILLE_PREFIX + $blue),
+                chr($class->BRAILLE_PREFIX + $alpha)
             );
 };
 

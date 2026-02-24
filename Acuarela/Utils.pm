@@ -32,12 +32,17 @@ use Acuarela::Color::RGBA;
 # Module utility functions
 sub parse_color($color_str) {   # Mainly to be able to use Acuarela::Color classes given any color string passed to STDIN
     # Generate a color object given the current color space
-    if ($color_str =~ m/(?:(rgb)a?|(RGB)A?)?(\(?(\d{1,3},?\s?){3,4}\)?)/g) { # RGBA color string
+    if ($color_str =~ m/(?:(rgb)a?)?(\(?(\d{1,3},?\s?){3,4}\)?)/gi) { # RGBA color string
+
+        # [TODO]: Add the following regex patterns to this section:
+        #   --> /(?:#\[?)((\d|[abcdef]){2}){3,4}(?:]?)/gi   # Hex color strings
+        #   --> /(?:#\[?)([⠀-⣿]){3,4}(?:]?)/gu              # Braille color strings (values between U+2800 - U+28FF)
+
         # Extract each channel accordingly
-        my @dummy_capture = split(/,\s?|\(|\)/, $3);  # Instead of the 2ⁿᵈ capture group, oddly enough
+        my @dummy_capture = split(/,\s?|\(|\)/, $2);
         shift(@dummy_capture);
 
-        my @rgba_capture = map(int, @dummy_capture);
+        my @rgba_capture = map {int($_)} @dummy_capture;
 
         # Build the RGBA color object
         my $depth = (max(@rgba_capture) <= 255)? 8 : 16;
