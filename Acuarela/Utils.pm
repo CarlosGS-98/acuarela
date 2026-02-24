@@ -47,7 +47,7 @@ sub parse_color($color_str) {   # Mainly to be able to use Acuarela::Color class
                 'r' => $rgba_capture[0],
                 'g' => $rgba_capture[1],
                 'b' => $rgba_capture[2],
-                'a' => (defined($rgba_capture[3]))? $rgba_capture[3] : 255,
+                'a' => (defined($rgba_capture[3]))? $rgba_capture[3] : 2 ** $depth - 1,
             },
             "bit_depth" => $depth,
         );
