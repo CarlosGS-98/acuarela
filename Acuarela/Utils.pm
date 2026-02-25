@@ -29,12 +29,13 @@ use Term::ANSIColor;
 
 # Custom imports
 use Acuarela::Color;
+use Acuarela::Color::CMYK;
 use Acuarela::Color::RGBA;
 
 # Module utility functions
 sub parse_color($color_str) {   # Mainly to be able to use Acuarela::Color classes given any color string passed to STDIN
     # Generate a color object given the current color space
-    if ($color_str =~ m/(?:#\[?)([\x{2800}-\x{28FF}]{3,4})(?:]?)/gu) {      # Braille color string
+    if ($color_str =~ m/(?:#\[?)([\x{2800}-\x{28FF}]{3,4})(?:]?)/gu) {          # Braille color string
         # Extract each channel accordingly
         my ($red_br, $green_br, $blue_br)   = map {$_ - Acuarela::Color::BRAILLE_PREFIX} (ord(substr($1, 0, 1)), ord(substr($1, 1, 1)), ord(substr($1, 2, 1)));
         my $alpha_br                        = (length($1) == 4)? ord(substr($1, 3, 1)) - Acuarela::Color::BRAILLE_PREFIX : 255;
@@ -50,7 +51,22 @@ sub parse_color($color_str) {   # Mainly to be able to use Acuarela::Color class
             "bit_depth" => 8,   # It's a pretty sensible assumption given that the "Braille Patterns" Unicode block occupies 256 characters
         );
     }
-    elsif ($color_str =~ m/(?:#\[?)((([\d|[abcdef]){1,2}){3,4})(?:]?)/gi) { # Hex color string
+    elsif ($color_str =~ m/(?:(cmy)k?)((\(?\d(\.\d+)?(,\s?)?\)?){3,4})/gi) {    # CMYK color string
+        # Extract each channel accordingly
+        my @dummy_capture = split(/,\s?|\(|\)/, $2);
+        shift(@dummy_capture);
+
+        # Build a CMYK color object
+        return Acuarela::Color::CMYK->new(
+            "channels"  => {
+                'c' => $dummy_capture[0] + 0.0, # To coerce our values into floats
+                'm' => $dummy_capture[1] + 0.0,
+                'y' => $dummy_capture[2] + 0.0,
+                'k' => (defined($dummy_capture[3]))? $dummy_capture[3] + 0.0 : 0.0,
+            },
+        );
+    }
+    elsif ($color_str =~ m/(?:#\[?)((([\d|[abcdef]){1,2}){3,4})(?:]?)/gi) {     # Hex color string
         my ($red_hex, $green_hex, $blue_hex, $alpha_hex); # Since we're gonna fill each channel depending on how many hex digits the string has
 
         if (length($1) == 3) {                              # Web-safe color string (without alpha)
@@ -77,7 +93,7 @@ sub parse_color($color_str) {   # Mainly to be able to use Acuarela::Color class
             "bit_depth" => 8,   # Support for 16-bit-per-channel hex colors might be added in the future
         );
     }
-    elsif ($color_str =~ m/(?:(rgb)a?)?(\(?(\d{1,3},?\s?){3,4}\)?)/gi) {    # RGBA color string
+    elsif ($color_str =~ m/(?:(rgb)a?)?(\(?(\d{1,3},?\s?){3,4}\)?)/gi) {        # RGBA color string
         # Extract each channel accordingly
         my @dummy_capture = split(/,\s?|\(|\)/, $2);
         shift(@dummy_capture);

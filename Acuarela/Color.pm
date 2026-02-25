@@ -55,7 +55,7 @@ sub update_channels(@channels) {
                 $self->channels->{$channel} = $value;
             }
             else {
-                croak("Color channel \'${$self->channels->{$channel}}\' is out of bounds (Range = [${$self->min_color_val}, ${$self->max_color_val}])");
+                croak("The new value for color channel \'$channel\' (=$value) is out of bounds (Valid range = [${$self->min_color_val}, ${$self->max_color_val}])");
             }
         }
         else {
@@ -65,10 +65,10 @@ sub update_channels(@channels) {
 }
 
 # Should be overridden by all child color classes
-sub convert_to($color_space) {
-    # Should return a proper subclass of Acuarela::Color selected by $color_space
-    croak("Abstract color method \'convert_to()\' not implemented");
-}
+# sub convert_to($color_space) {
+#     # Should return a proper subclass of Acuarela::Color selected by $color_space
+#     croak("Abstract color method \'convert_to()\' not implemented");
+# }
 
 sub as_str() {
     croak("Abstract color method \'as_str()\' not implemented");

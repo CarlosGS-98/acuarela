@@ -26,25 +26,12 @@ my $test_color = Acuarela::Color::RGBA->new(
     #"bit_depth" => 16,
 );
 
-my @test_spaces = qw(CMY CMYK HSL HSV RGB RGBA);
-my @lc_spaces = map {lc($_)} @test_spaces;
-
 print("Test Color [OBJECT]\t=\t$test_color\n");
 print(Dumper(\%$test_color));
 
 print("${\($test_color->as_braille())}\n");
 print("${\($test_color->as_hex())}\n");
 print("${\($test_color->as_str())}\n");
-
-print(Dumper(@test_spaces));
-print(Dumper(@lc_spaces));
-
-foreach(@lc_spaces) {
-    my $test_str = $test_color->convert_to($_);
-    print("Test color conversion: $test_str\n");
-}
-
-#print(Term::ANSIColor::color)
 
 $test_color->update_channels(('r' => 255, 'g' => 128));
 print(Dumper(\%$test_color));
@@ -62,3 +49,10 @@ print(Dumper(\%$parsed_hex));
 
 my $parsed_web = Acuarela::Utils::parse_color("#09f");
 print(Dumper(\%$parsed_web));
+
+my $parsed_cmyk= Acuarela::Utils::parse_color("cmyk(1.0, 0.75, 0.5, 0.25)");
+print(Dumper(\%$parsed_cmyk));
+print("${\($parsed_cmyk->as_str())}\n");
+print("${\($parsed_cmyk->as_cmy())}\n");
+print("${\($parsed_cmyk->as_braille())}\n");
+print("${\($parsed_cmyk->as_hex())}\n");
