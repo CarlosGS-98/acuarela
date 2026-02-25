@@ -7,6 +7,7 @@ use v5.40;
 use strict;
 use warnings;
 use utf8;
+use utf8::all;
 use feature 'signatures';
 
 # Standard imports

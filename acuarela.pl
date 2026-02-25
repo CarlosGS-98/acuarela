@@ -50,5 +50,15 @@ $test_color->update_channels(('r' => 255, 'g' => 128));
 print(Dumper(\%$test_color));
 
 my $parsed_color = Acuarela::Utils::parse_color($test_color->as_str());
-
 print(Dumper(\%$parsed_color));
+
+$test_color->update_channels(('a' => 64));
+my $parsed_braille = Acuarela::Utils::parse_color($test_color->as_braille());
+print(Dumper(\%$parsed_braille));
+
+$test_color->update_channels(('b' => 64));
+my $parsed_hex = Acuarela::Utils::parse_color($test_color->as_hex());
+print(Dumper(\%$parsed_hex));
+
+my $parsed_web = Acuarela::Utils::parse_color("#09f");
+print(Dumper(\%$parsed_web));
